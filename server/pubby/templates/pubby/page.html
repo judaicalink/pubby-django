@@ -8,25 +8,34 @@
 <main class="row">
 	<div class="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-8">
 
+    <!-- Title -->
+        <div style="word-wrap: break-word;">
+    <h1 class="text-center text-md-left">{{resource_label}} <button type="button" class="btn btn-dark btn-sm" disabled>{{dataset_main_label}}</button></h1>
+        </div>
 
-    <!-- <meta charset="UTF-8"> -->
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
-    <title>{{resource_label}}</title>
-    <h1 class="text-center text-md-left">{{resource_label}}</h1>
 
-    <p>URI: <a href="{{resource_uri}}">{{resource_uri}}</a></p>
+    <!-- Description -->
+        {% if wikidata_image_data %}
+            <p>Description: {{wikidata_image_data.img_description}}</p>
+        {% endif %}
 
-<!--    <nav>
-      <a href="#" class=switch-mode>
-        <span class=text-for-light>Light Mode</span>
-        <span class=text-for-dark>Dark Mode</span>
-      </a>
-    </nav>-->
+
+    <!-- URI -->
+<!--        <div style="word-wrap: break-word;">-->
+<!--    <p class="text-center text-md-left">URI:-->
+<!--        <a href="{{resource_uri}}">{{resource_uri}}</a>-->
+<!--    </p>-->
+<!--        </div>-->
+
+    <!-- FID-Link -->
+    {% if fid_link != None %}
+    <a class="text-center text-md-left btn btn-info" href="{{fid_link}}" target="_blank">see FID Datasets</a>
+    <br><br>
+    {% endif %}
 
     <div class="table-responsive">
-
     <table class="table table-light table-striped">
-      <tr><th scope="col" style="width: 35%">Property</th><th scope="col">Value</th></tr>
+      <tr><th scope="col" style="width: 35%">Property</th><th scope="col">Value</th><th>Label</th></tr>
       {% for predicate in primary_resource %}
       <tr>
         <td>
@@ -37,21 +46,35 @@
           {% endif %}
         </td>
         <td>
-          {% if predicate.graph.link %}
-          <a class="graph badge badge-secondary float-right ml-3 mb-3" href="{{predicate.graph.link}}">
-            {{predicate.graph.label}}
-          </a>
-          {% endif %}
           {% if predicate.num_objects == 1 %}
           {% include "pubby/object_link.html" with object=predicate.objects.0 length=10000 %}
           {% else %}
-          <ul>
+          <ul class="list-unstyled">
             {% for object in predicate.objects %}
             <li>
-              {% include "pubby/object_link.html" with object=object length=40 %}
+              {% include "pubby/object_link.html" with object=object length=25 %}
+                
+                    {% for item in object.labels %}
+                      {% if item.dataset_label != None %}
+                      <span class="graph badge badge-info float-right">
+                        {{item.dataset_label}}
+                      </span>
+
+                      {% endif %}
+                    {% endfor %}
+
+                
             </li>
             {% endfor %}
           </ul>
+          {% endif %}
+        </td>
+
+        <td>
+          {% if predicate.graph.link %}
+          <a class="graph badge badge-secondary" href="{{predicate.graph.link}}">
+            {{predicate.graph.label}}
+          </a>
           {% endif %}
         </td>
       </tr>
@@ -65,14 +88,21 @@
 
 
     <div class="col-md-0 col-lg-3 col-xl-4">
-     <div class="img-fluid mt-4 sticky-top" id="picturemargintop30">
-            <img src="{% static '/img/markus-winkler-aYPtEknQmXE-unsplash.jpg' %}" class="img-thumbnail img-fluid mt-4" alt="Dataset Picture">
-       <br><br>
-         <p class="alert alert-info text-center">Dataset about: <b>{{resource_label}}</b></p>
+     <div class="image-fluid mt-4" id="picturemargintop30">
+         {% if wikidata_image_data %}
+            <img src="{{wikidata_image_data.img_url}}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
+     </div>
+            <div style="word-wrap: break-word;">
+                <p class="alert alert-info text-center mt-2"><b>License:</b> {{wikidata_image_data.img_license}}<br><b>Creator:</b> {{wikidata_image_data.img_author|safe}}</p>
+            </div>
+         {% else %}
+            <img src="{% static '/img/markus-winkler-aYPtEknQmXE-unsplash.jpg' %}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
+         {% endif %}
+
 
 </div>
     </div>
-        </div>
+
 
 </main>
 
