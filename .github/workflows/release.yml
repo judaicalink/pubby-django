@@ -44,6 +44,9 @@ jobs:
         run: |
           pip install safety
           safety check --full-report
+          
+      - name: Install bump2version
+        run: pip install bump2version
 
       - name: Generate changelog from commits
         uses: heinrichreimer/github-changelog-generator-action@v2.2
