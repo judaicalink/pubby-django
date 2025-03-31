@@ -8,13 +8,18 @@
     {% if resource_label %}
         <meta name="keywords" content="{{ resource_label }}">
     {% endif %}
-    {% if wikidata_image_data %}
-        <meta name="description" content="{{ wikidata_image_data.img_description }}">
+    {% if image_data %}
+        <meta name="description" content="{{image_data.img_description }}">
     {% endif %}
-    <title>JudaicaLink data</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <title>JudaicaLink Data</title>
+
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css"> -->
 
     <link rel="stylesheet" type="text/css" href="{% static 'pubby/labs.css' %}">
     <!-- Scrollbar Custom CSS -->
@@ -50,7 +55,7 @@
 
 <body>
 <div class="wrapper">
-    {% include "pubby/navbar.html" %}
+    {% include "pubby/partials/navbar.html" %}
     <div id="content">
         <div class="container-fluid">
             {% block content %}
@@ -66,23 +71,12 @@
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <!--<script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>-->
 
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<!--<script src="{% static 'js/bootstrap.min.js' %}"></script>-->
-
 <!--s. unten Symbole bei der sidebar-->
 <!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script>-->
 <script rel="javascript" src="{% static 'pubby/scripts.js' %}" type="javascript"></script>
 
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-        crossorigin="anonymous"></script>
-<!-- Popper.JS -->
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-<!-- Bootstrap JS -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
         crossorigin="anonymous"></script>
 <!-- jQuery Custom Scroller CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
