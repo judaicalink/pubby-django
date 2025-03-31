@@ -43,3 +43,14 @@ jobs:
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Dependency Audit
+        run: |
+          pip install pip-audit
+          pip-audit
+
+      - name: Run Safety Check
+        run: |
+          pip install safety
+          safety check --full-report
+
