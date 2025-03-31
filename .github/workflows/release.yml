@@ -1,0 +1,45 @@
+name: Django Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+
+jobs:
+  test-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Django Checks
+        run: |
+          python manage.py check
+          python manage.py test
+
+      - name: Run Security Scan (Bandit)
+        run: |
+          pip install bandit
+          bandit -r .
+
+      - name: Collect Static Files
+        run: |
+          python manage.py collectstatic --noinput
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
