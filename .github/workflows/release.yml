@@ -1,12 +1,13 @@
-name: Django Release Pipeline
+name: Django Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+      - 'v*.*.*'
 
 jobs:
-  test-and-release:
+  release:
+    name: Release Django App
     runs-on: ubuntu-latest
 
     steps:
@@ -23,28 +24,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Django Checks
-        run: |
-          python manage.py check
-          python manage.py test
+      - name: Run Django system checks
+        run: python manage.py check
 
-      - name: Run Security Scan (Bandit)
+      - name: Run Tests
+        run: python manage.py test
+
+      - name: Run Bandit Security Scan
         run: |
           pip install bandit
           bandit -r .
 
-      - name: Collect Static Files
-        run: |
-          python manage.py collectstatic --noinput
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Run Dependency Audit
+      - name: Audit Dependencies
         run: |
           pip install pip-audit
           pip-audit
@@ -53,4 +44,27 @@ jobs:
         run: |
           pip install safety
           safety check --full-report
+
+      - name: Generate changelog from commits
+        uses: heinrichreimer/github-changelog-generator-action@v2.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          futureRelease: ${{ github.ref_name }}
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
+      - name: Build Docker image
+        run: |
+          docker build -t youruser/yourapp:${{ github.ref_name }} .
+          echo "Docker image built for tag ${{ github.ref_name }}"
+
+      - name: Push GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
