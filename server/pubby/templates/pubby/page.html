@@ -1,107 +1,109 @@
 {% extends 'pubby/base.html' %}
 {% block content %}
-{% load static %}
+    {% load static %}
 
 
-<!--content-->
+    <!--content-->
     {% include "pubby/partials/header.html" %}
-<main class="row">
-	<div class="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-8">
+    <main class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-8">
 
-    <!-- Title -->
-        <div style="word-wrap: break-word;">
-    <h1 class="text-center text-md-left">{{resource_label}} <button type="button" class="btn btn-dark btn-sm" disabled>{{dataset_main_label}}</button></h1>
-        </div>
+            <!-- Title -->
+            <div style="word-wrap: break-word;">
+                <h1 class="text-center text-md-left">{{resource_label}} <button type="button" class="btn btn-dark btn-sm" disabled>{{dataset_main_label}}</button></h1>
+            </div>
 
 
-        <!-- FID-Link -->
-    {% if fid_link != None %}
-    <a class="text-center text-md-left btn btn-info text-white" href="{{fid_link}}" target="_blank"><i class="fas fa-menorah" ></i> FID Dataset</a>
-    <br><br>
-    {% endif %}
+            <!-- FID-Link -->
+            {% if fid_link != None %}
+                <a class="text-center text-md-left btn btn-info text-white" href="{{fid_link}}" target="_blank"><i class="fas fa-menorah" ></i> FID Dataset</a>
+                <br><br>
+            {% endif %}
 
-    <div class="table-responsive">
-    <table class="table table-light table-striped">
-      <tr><th scope="col" style="width: 35%">Property</th><th scope="col">Value</th><th>Label</th></tr>
-      {% for predicate in primary_resource %}
-      <tr>
-        <td>
-          {% if predicate.is_subject %}
-          {% include "pubby/partials/predicate_link.html" with predicate=predicate %}
-          {% else %}
-          is {% include "pubby/partials/predicate_link.html" with predicate=predicate %} of
-          {% endif %}
-        </td>
-        <td>
-          {% if predicate.num_objects == 1 %}
-          {% include "pubby/partials/object_link.html" with object=predicate.objects.0 length=10000 %}
-          {% else %}
-          <ul class="list-unstyled">
-            {% for object in predicate.objects %}
-            <li>
-              {% include "pubby/partials/object_link.html" with object=object length=25 %}
-                
-                    {% for item in object.labels %}
-                      {% if item.dataset_label != None %}
-                      <span class="graph badge badge-info float-right">
+            <div class="table-responsive">
+                <table class="table table-light table-striped">
+                    <tr><th scope="col" style="width: 35%">Property</th><th scope="col">Value</th><th>Label</th></tr>
+                    {% for predicate in primary_resource %}
+                        <tr>
+                            <td>
+                                {% if predicate.is_subject %}
+                                    {% include "pubby/partials/predicate_link.html" with predicate=predicate %}
+                                {% else %}
+                                    is {% include "pubby/partials/predicate_link.html" with predicate=predicate %} of
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if predicate.num_objects == 1 %}
+                                    {% include "pubby/partials/object_link.html" with object=predicate.objects.0 length=10000 %}
+                                {% else %}
+                                    <ul class="list-unstyled">
+                                        {% for object in predicate.objects %}
+                                            <li>
+                                                {% include "pubby/partials/object_link.html" with object=object length=25 %}
+
+                                                {% for item in object.labels %}
+                                                    {% if item.dataset_label != None %}
+                                                        <span class="graph badge badge-info float-right">
                         {{item.dataset_label}}
                       </span>
 
-                      {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+
+
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if predicate.graph.link %}
+
+                                    <a class="graph btn btn-secondary btn-sm" role="button" href="{{predicate.graph.link}}">
+                    {{predicate.graph.label}}
+                                    </a>
+
+                                {% endif %}
+                            </td>
+                        </tr>
                     {% endfor %}
-
-                
-            </li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-        </td>
-
-        <td>
-          {% if predicate.graph.link %}
-          <a class="graph badge badge-secondary" href="{{predicate.graph.link}}">
-            {{predicate.graph.label}}
-          </a>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-    </div>
-
-
-</div>
-
-
-
-    <div class="col-md-0 col-lg-3 col-xl-4">
-     <div class="image-fluid mt-4" id="picturemargintop30">
-         {% if image_data %}
-            <img src="{{image_data.img_url}}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
-     </div>
-            <div style="word-wrap: break-word;">
-                <p class="alert alert-info text-center mt-2">
-                    <b>License:</b> {{image_data.img_license}}<br />
-                    <b>Creator:</b> {{image_data.img_author|safe}}<br />
-                    {% if image_data.img_description %}
-                        <b>Description:</b> {{image_data.img_description}}<br />
-                    {% endif %}
-                </p>
+                </table>
             </div>
-         {% else %}
-            <img src="{% static '/img/markus-winkler-aYPtEknQmXE-unsplash.jpg' %}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
-         {% endif %}
 
 
-</div>
-
-</main>
+        </div>
 
 
-<!--footer-->
 
-{% include "pubby/partials/footer.html" %}
+        <div class="col-md-0 col-lg-3 col-xl-4">
+            <div class="image-fluid mt-4" id="picturemargintop30">
+                {% if image_data %}
+                    <img src="{{image_data.img_url}}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
+                    </div>
+                    <div style="word-wrap: break-word;">
+                        <p class="alert alert-info text-center mt-2">
+                            <b>License:</b> {{image_data.img_license}}<br />
+                            <b>Creator:</b> {{image_data.img_author|safe}}<br />
+                            {% if image_data.img_description %}
+                                <b>Description:</b> {{image_data.img_description}}<br />
+                            {% endif %}
+                        </p>
+                    </div>
+                {% else %}
+                    <img src="{% static '/img/markus-winkler-aYPtEknQmXE-unsplash.jpg' %}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
+                {% endif %}
 
-<!--footer-->
+
+        </div>
+
+    </main>
+
+
+    <!--footer-->
+
+    {% include "pubby/partials/footer.html" %}
+
+    <!--footer-->
 
 {% endblock content %}

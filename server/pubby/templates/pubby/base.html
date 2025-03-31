@@ -1,4 +1,5 @@
 {% load static %}
+{% load bootstrap5 %}
 
 <html lang="en">
 <head>
@@ -13,15 +14,14 @@
     {% endif %}
     <title>JudaicaLink Data</title>
 
-    {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
 
     <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css"> -->
+    <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
 
-    <link rel="stylesheet" type="text/css" href="{% static 'pubby/labs.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/labs.css' %}">
     <!-- Scrollbar Custom CSS -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
@@ -53,7 +53,6 @@
 
 </head>
 
-<body>
 <div class="wrapper">
     {% include "pubby/partials/navbar.html" %}
     <div id="content">
@@ -68,20 +67,12 @@
      style="border:0" alt=""/>
 <!-- End Matomo -->
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<!--<script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>-->
 
-<!--s. unten Symbole bei der sidebar-->
-<!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script>-->
-<script rel="javascript" src="{% static 'pubby/scripts.js' %}" type="javascript"></script>
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+<script rel="javascript" src="{% static 'js/scripts.js' %}" type="javascript"></script>
 
-
-<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-        crossorigin="anonymous"></script>
 <!-- jQuery Custom Scroller CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.concat.min.js"></script>
-
-<script src="https://use.fontawesome.com/releases/v5.13.0/js/all.js" data-auto-replace-svg="nest"></script>
+<script src="{% static 'js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
 
 <script src="{% static 'pubby/design.js' %}" type="javascript"></script>
 
