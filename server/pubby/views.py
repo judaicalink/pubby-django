@@ -202,7 +202,7 @@ def get(request, URI):
     context["resource_uri"] = resource.resource_uri
     gnd_id = fetch_gnd_id(resource.resource_uri)
     context["fid_link"] = get_fid_link(primary_resource)
-    context["wikidata_image_data"] = img_data(primary_resource)
+    context["image_data"] = img_data(primary_resource)
     context["dataset_main_label"] = dataset_main_label(resource.resource_uri)
     # print (primary_resource)
 
@@ -510,25 +510,25 @@ def fetch_image_from_wikidata(wikidata_id):
 
 def fetch_image_from_fid(fid_link):
     """Tries to fetch image from FID page (static HTML parsing)."""
-    print("Fetching image from FID...", fid_link)
+    logger.debug("Fetching image from FID...", fid_link)
     try:
         response = requests.get(fid_link, timeout=10)
         if response.status_code == 200:
-            print("Response OK")
+            logger.debug("Response OK")
             soup = BeautifulSoup(response.content, "html.parser")
             img_tag = soup.find("div", {"class": "agent-column-media"}).find("img")
-            print("Image Tag: ", img_tag)
+            logger.debug("Image Tag: ", img_tag)
             if img_tag and "src" in img_tag.attrs:
                 return {
                     "img_url": img_tag["src"],
                     # get base url in img_tag["src"] wihth regex
                     "img_author": re.search(r"^(https?://[^/]+)", img_tag["src"]).group(1) + " fetched from FID Portal",
                     "img_license": "Unknown",
-                    "img_description": img_tag["alt"]
+                    "img_description": None
                 }
         else:
-            print("Response not OK")
-            print("Status code:", response.status_code)
+            logger.debug("Response not OK")
+            logger.debug("Status code:", response.status_code)
 
     except Exception:
         pass
