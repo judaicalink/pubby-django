@@ -3,7 +3,6 @@ import logging
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseNotFound, Http404
 from django.contrib.sitemaps import Sitemap
 from django.shortcuts import render, redirect
-from django.template import RequestContext
 from pubby.config import getconfig
 from SPARQLWrapper import SPARQLWrapper, JSONLD
 from rdflib import URIRef, BNode, Literal, RDFS
@@ -13,11 +12,14 @@ from .gnd import fetch_gnd_id
 import csv
 import requests
 import hashlib
+import regex
+from bs4 import BeautifulSoup
+
 
 logger = logging.getLogger(__name__)
 
 
-# Create your views here.
+fallback_img_cache = {}
 
 class Resource:
     def __init__(self, request, request_path):
@@ -198,7 +200,8 @@ def get(request, URI):
     context["primary_resource"] = primary_resource
     context["publish_resources"] = publish_resources
     context["resource_uri"] = resource.resource_uri
-    context["fid_link"] = get_fid_link(primary_resource, fetch_gnd_id(resource.resource_uri))
+    gnd_id = fetch_gnd_id(resource.resource_uri)
+    context["fid_link"] = get_fid_link(primary_resource)
     context["wikidata_image_data"] = img_data(primary_resource)
     context["dataset_main_label"] = dataset_main_label(resource.resource_uri)
     # print (primary_resource)
@@ -262,8 +265,8 @@ def create_quad_by_predicate(uri, resource, result):
     return sparql_data
 
 
-uri_spaces = re.compile(r"[-_+.#?]")
-camel_case_words = re.compile(r"[\p{L}\p{N}][^\p{Lu} ]*")
+uri_spaces = regex.compile(r"[-_+.#?]")
+camel_case_words = regex.compile(r"[\p{L}\p{N}][^\p{Lu} ]*")
 bad_chars = "?="
 bad_words = ["html", "xml", "ttl"]
 
@@ -411,21 +414,54 @@ def index(request):
 
 
 
-def img_data(primary_resource):
-    # 1. gets the wikidata url for an image from the "Owl Same As" Property with the Value of the wikidata link
 
+def fetch_gnd_id(primary_resource):
+    """Extracts GND ID from RDF triples."""
+    if not isinstance(primary_resource, list):
+        return None
+
+    for predicate in primary_resource:
+        if not isinstance(predicate, dict) or "labels" not in predicate:
+            continue
+
+        for label in predicate["labels"]:
+            if label["heuristic"] == "Owl Same As":
+                for obj in predicate.get("objects", []):
+                    link = obj.get("link", "")
+                    if "d-nb.info/gnd" in link and "about" not in link:
+                        return link.split("/")[-1]
+
+            elif label["heuristic"] == "Gnd Gnd Identifier":
+                for obj in predicate.get("objects", []):
+                    for obj_label in obj.get("labels", []):
+                        return obj_label["label"]
+
+    return None
+
+
+def fetch_wikidata_id(primary_resource):
+    """Extracts Wikidata ID from RDF triples."""
+    for predicate in primary_resource:
+        for label in predicate["labels"]:
+            if label["heuristic"] == "Owl Same As":
+                for obj in predicate["objects"]:
+                    link = obj["link"]
+                    if "wikidata.org/entity/" in link:
+                        return link.split("/")[-1]
+    return None
+
+
+def get_fid_link(primary_resource):
+    """Builds FID catalog link using the GND ID."""
+    gnd_id = fetch_gnd_id(primary_resource)
+    if gnd_id:
+        return f"https://portal.jewishstudies.de/Author/Home?gnd={gnd_id}"
+    return None
+
+
+def fetch_image_from_wikidata(wikidata_id):
+    """Fetches image and metadata from Wikidata."""
     try:
-
-        for predicate in primary_resource:
-            for item in predicate["labels"]:
-                if item["heuristic"] == "Owl Same As":
-                    for object in predicate["objects"]:
-                        # print (object)
-                        if "http://www.wikidata.org/entity/" in object["link"]:
-                            id = object["link"].split("/")[-1]
-
-        wikidata_id = id
-
         params = {
             "action": "wbgetclaims",
             "format": "json",
@@ -433,136 +469,110 @@ def img_data(primary_resource):
             "property": "P18",
             "entity": wikidata_id
         }
-        # P18 = image property from wikidata
-
-        SESSION = requests.Session()
-        ENDPOINT = "https://wikidata.org/w/api.php"
-
-        response = SESSION.get(url=ENDPOINT, params=params)
+        response = requests.get("https://wikidata.org/w/api.php", params=params)
         data = response.json()
+
         filename = data["claims"]["P18"][0]["mainsnak"]["datavalue"]["value"]
         filename = filename.replace(" ", "_")
-        # spaces have to be replaced with underscores to create the right link & md5sum
-        # filename = Junior-Jaguar-Belize-Zoo.jpg
-
         md5sum = hashlib.md5(filename.encode('utf-8')).hexdigest()
-        # md5sum is created from the filname of the image and used to create the link to the image on wikidata (used are the first 2 digits)
+        image_url = f"https://upload.wikimedia.org/wikipedia/commons/{md5sum[0]}/{md5sum[0]}{md5sum[1]}/{filename}"
 
-        image_url = "https://upload.wikimedia.org/wikipedia/commons/" + md5sum[0] + "/" + md5sum[0] + md5sum[
-            1] + "/" + filename
+        # Metadata
+        meta_url = f"https://commons.wikimedia.org/w/api.php?action=query&titles=File:{filename}" \
+                   "&prop=imageinfo&iiprop=user|userid|canonicaltitle|url|extmetadata&format=json"
+        meta_response = requests.get(meta_url).json()
+        page_id = next(iter(meta_response['query']['pages']))
+        info = meta_response['query']['pages'][page_id]['imageinfo'][0]['extmetadata']
 
-        # 2.  gets the image license and author name from the wikimedia pictures for our datasets
+        image_license = info['UsageTerms']['value']
+        image_author = re.sub(r"(?s)<div(?: [^>]*)?>|<\/div>", "", info['Artist']['value'])
 
-        start_of_end_point_str = 'https://commons.wikimedia.org' \
-                                 '/w/api.php?action=query&titles=File:'
-        end_of_end_point_str = '&prop=imageinfo&iiprop=user' \
-                               '|userid|canonicaltitle|url|extmetadata&format=json'
-        result = requests.get(start_of_end_point_str + filename + end_of_end_point_str)
-        result = result.json()
-        page_id = next(iter(result['query']['pages']))
-        image_license = result['query']['pages'][page_id]['imageinfo'][0]['extmetadata']['UsageTerms']['value']
-        image_author = result['query']['pages'][page_id]['imageinfo'][0]['extmetadata']['Artist']['value']
-        # removing <div>s from image_author so it's formatted correctly in the template
-        if "div" in image_author:
-            image_author = re.sub("(?s)<div(?: [^>]*)?>", "", image_author)
-            image_author = re.sub("<\/div>", "", image_author)
-
-        # image_info = result['imageinfo']['extmetadata']['UsageTerms']
-
-        # 3. to get the description from wikidata
-
-        url = "https://www.wikidata.org/w/api.php"
-
-        params = {
+        # Description
+        desc_params = {
             "action": "wbsearchentities",
             "language": "en",
             "format": "json",
             "search": wikidata_id
         }
+        desc_response = requests.get("https://www.wikidata.org/w/api.php", params=desc_params).json()
+        image_description = desc_response["search"][0]["description"]
 
-        data = requests.get(url, params=params)
-        image_description = data.json()["search"][0]["description"]
+        return {
+            "img_url": image_url,
+            "img_author": image_author,
+            "img_license": image_license,
+            "img_description": image_description
+        }
 
-        return {"img_url": image_url, "img_author": image_author, "img_license": image_license,
-                "img_description": image_description}
-
-    except:
+    except Exception:
         return None
 
 
-# to create a FID link from the gnd-ID
-def get_fid_link(primary_resource, gnd_id):
-
-
+def fetch_image_from_fid(fid_link):
+    """Tries to fetch image from FID page (static HTML parsing)."""
+    print("Fetching image from FID...", fid_link)
     try:
+        response = requests.get(fid_link, timeout=10)
+        if response.status_code == 200:
+            print("Response OK")
+            soup = BeautifulSoup(response.content, "html.parser")
+            img_tag = soup.find("div", {"class": "agent-column-media"}).find("img")
+            print("Image Tag: ", img_tag)
+            if img_tag and "src" in img_tag.attrs:
+                return {
+                    "img_url": img_tag["src"],
+                    # get base url in img_tag["src"] wihth regex
+                    "img_author": re.search(r"^(https?://[^/]+)", img_tag["src"]).group(1) + " fetched from FID Portal",
+                    "img_license": "Unknown",
+                    "img_description": img_tag["alt"]
+                }
+        else:
+            print("Response not OK")
+            print("Status code:", response.status_code)
 
-        for predicate in primary_resource:
-            for item in predicate["labels"]:
-                # here for the entity pages see: http://127.0.0.1:8000/pubby/html/ep/1000063 Brzechwa, Jan
-                if gnd_id != None:
-                    if item["heuristic"] == "22 Rdf Syntax Ns Type":
-                        for object in predicate["objects"]:
-                            for item in object["labels"]:
-                                if item["heuristic"] == "Person":
-                                    fid_link = "https://portal.jewishstudies.de/Author/Home?gnd=" + gnd_id
-                                    return fid_link
+    except Exception:
+        pass
+    return None
 
-        # here for the gnd datasets see: http://127.0.0.1:8000/pubby/html/gnd/118529579 Albert Einstein
-        for predicate in primary_resource:
-            for item in predicate["labels"]:
-                if item["heuristic"] == "22 Rdf Syntax Ns Type":
-                    for object in predicate["objects"]:
-                        for item in object["labels"]:
-                            # We have to check if the dataset is a person - 22 Rdf Syntax Ns Type = Person
-                            if item["heuristic"] == "Person":
 
-                                # We have to check if the dataset has no gnd_id yet from ep_GND_ids.json.gz, is no entity page
-                                if gnd_id == None:
-                                    for predicate in primary_resource:
-                                        for item in predicate["labels"]:
-                                            if item["heuristic"] == "Owl Same As":
-                                                for object in predicate["objects"]:
-                                                    if "d-nb.info/gnd" in object["link"] and "about" not in object[
-                                                        "link"]:
-                                                        gnd_id_value = object["link"].split("/")[-1]
-                                                        fid_link = "https://portal.jewishstudies.de/Author/Home?gnd=" + gnd_id_value
-                                                        # returns first gnd-id that is found in owl same as
-                                                        return fid_link
+def img_data(primary_resource):
+    """Main function: Try Wikidata → FID → None"""
+    wikidata_id = fetch_wikidata_id(primary_resource)
+    if wikidata_id:
+        img = fetch_image_from_wikidata(wikidata_id)
+        if img:
+            return img
 
-                                            # if item["heuristic"] == "Gnd Gnd Identifier":  # -----Attention: if we change the name to GND Identifier we have to adjust it here too
-                                            #    for object in predicate["objects"]:
-                                            #        for item in object["labels"]:
-                                            #            gnd_id_value = item["label"]
-                                            #            fid_link = "https://portal.jewishstudies.de/Author/Home?gnd=" + gnd_id_value
-                                            #            return fid_link
+    fid_link = get_fid_link(primary_resource)
+    if fid_link:
+        img = fetch_image_from_fid(fid_link)
+        if img:
+            return img
 
-                            else:
-                                return None
+    return None
 
-    except:
-        return None
 
 
 # Error pages
 # Not found
 def custom_error_404(request, exception):
-    return render(request, 'pubby/404.html', context={}, content_type='text/html', status=404)
+    return render(request, 'pubby/errors/404.html', context={}, content_type='text/html', status=404)
 
 # Server error
 def custom_error_500(request, exception=None):
-    return render(request, 'pubby/500.html', context={}, content_type='text/html', status=500)
+    return render(request, 'pubby/errors/500.html', context={}, content_type='text/html', status=500)
 
 # Bad request
 def custom_error_400(request, exception=None):
-    return render(request, 'pubby/400.html', context={}, content_type='text/html', status=400)
+    return render(request, 'pubby/errors/400.html', context={}, content_type='text/html', status=400)
 
 # Forbidden
 def custom_error_403(request, exception=None):
-    return render(request, 'pubby/403.html', context={}, content_type='text/html', status=403)
+    return render(request, 'pubby/errors/403.html', context={}, content_type='text/html', status=403)
 
 
 def test_error_page(request):
-    return render(request, 'pubby/404.html', context={}, content_type='text/html', status=404)
+    return render(request, 'pubby/errors/404.html', context={}, content_type='text/html', status=404)
 
 
 class SitemapGenerator(Sitemap):
