@@ -31,6 +31,10 @@ jobs:
       - name: Run Tests
         working-directory: server
         run: python manage.py test
+    
+      - name: Collect static files
+        working-directory: server
+        run: python manage.py collectstatic --noinput
 
       - name: Run Bandit Security Scan
         run: |
@@ -47,11 +51,11 @@ jobs:
           pip install safety
           safety check --full-report
 
-      - name: Install bump2version
-        run: pip install bump2version
+      #- name: Install bump2version
+      #  run: pip install bump2version
       
-      - name: Bump version manually (if needed)
-        run: bump2version patch  # or minor/major
+      #- name: Bump version manually (if needed)
+      #  run: bump2version patch  # or minor/major
 
       - name: Generate changelog from commits
         uses: heinrichreimer/github-changelog-generator-action@v2.2
@@ -59,9 +63,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           futureRelease: ${{ github.ref_name }}
 
-      - name: Collect static files
-        working-directory: server
-        run: python manage.py collectstatic --noinput
 
       #- name: Build Docker image
       #  run: |
@@ -72,7 +73,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 
