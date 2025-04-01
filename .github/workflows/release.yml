@@ -1,6 +1,9 @@
 name: Django Release
 
+
 on:
+  workflow_dispatch:
+  
   push:
     tags:
       - 'v*.*.*'
