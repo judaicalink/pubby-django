@@ -12,7 +12,6 @@
 labs/secret_key.txt
 labs/labs/localsettings.py
 server/server/localsettings.py
-server/server/
 server/pubby/ep_GND_ids.json
 server/pubby/ep_GND_ids.json.gz
 htpasswd

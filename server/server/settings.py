@@ -16,18 +16,23 @@ import mimetypes
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+if os.path.isfile("server/localsettings.py"):
+    from .localsettings import *
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wzc-#ww=hs59p81@m13ur8r0i#4sak!0u_wy6@5no$-y98rt+d'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+if SECRET_KEY is None:
+    # generate a new secret key
+    print("SECRET_KEY not set, set it in localsettings.py")
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+if ALLOWED_HOSTS is None:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
+if DEBUG is None:
+    DEBUG = True
 
 # Application definition
 
@@ -146,9 +151,6 @@ PUBBY_CONFIG = {
 
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
-
-if os.path.isfile("server/localsettings.py"):
-    from .localsettings import *
 
 
 
