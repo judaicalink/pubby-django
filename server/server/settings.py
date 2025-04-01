@@ -24,15 +24,22 @@ if os.path.isfile("server/localsettings.py"):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-if SECRET_KEY is None:
-    # generate a new secret key
+#if SECRET_KEY is not defined:
+try:
+    from .localsettings import SECRET_KEY
+except ImportError:
     print("SECRET_KEY not set, set it in localsettings.py")
 
-if ALLOWED_HOSTS is None:
+try:
+    from .localsettings import DEBUG
+except ImportError:
+    DEBUG = False
+
+try:
+    from .localsettings import ALLOWED_HOSTS
+except ImportError:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
-if DEBUG is None:
-    DEBUG = True
 
 # Application definition
 
