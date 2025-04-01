@@ -538,8 +538,9 @@ def fetch_image_from_fid(fid_link):
             logger.debug("Response not OK")
             logger.debug("Status code:", response.status_code)
 
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Exception occurred while fetching image from FID")
+        logger.debug("Error:", str(e))
     return None
 
 
