@@ -159,3 +159,7 @@ runserver.sh
 /server/static/admin/
 /server/static/pubby/
 /server/static/django_extensions
+
+
+# ttl ffiles
+server/pubby/config-local.ttl
