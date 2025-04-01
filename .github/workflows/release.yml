@@ -25,9 +25,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Django system checks
+        working-directory: server
         run: python manage.py check
 
       - name: Run Tests
+        working-directory: server
         run: python manage.py test
 
       - name: Run Bandit Security Scan
@@ -58,6 +60,7 @@ jobs:
           futureRelease: ${{ github.ref_name }}
 
       - name: Collect static files
+        working-directory: server
         run: python manage.py collectstatic --noinput
 
       - name: Build Docker image
