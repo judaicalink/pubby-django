@@ -469,7 +469,7 @@ def fetch_image_from_wikidata(wikidata_id):
             "property": "P18",
             "entity": wikidata_id
         }
-        response = requests.get("https://wikidata.org/w/api.php", params=params)
+        response = requests.get("https://wikidata.org/w/api.php", params=params, timeout=10)
         data = response.json()
 
         filename = data["claims"]["P18"][0]["mainsnak"]["datavalue"]["value"]
