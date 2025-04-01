@@ -60,13 +60,6 @@ jobs:
       #- name: Bump version manually (if needed)
       #  run: bump2version patch  # or minor/major
 
-      - name: Generate changelog from commits
-        uses: heinrichreimer/github-changelog-generator-action@v2.2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          futureRelease: ${{ github.ref_name }}
-
-
       #- name: Build Docker image
       #  run: |
       #    docker build -t youruser/yourapp:${{ github.ref_name }} .
