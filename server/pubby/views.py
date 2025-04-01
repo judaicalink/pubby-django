@@ -478,9 +478,17 @@ def fetch_image_from_wikidata(wikidata_id):
         image_url = f"https://upload.wikimedia.org/wikipedia/commons/{md5sum[0]}/{md5sum[0]}{md5sum[1]}/{filename}"
 
         # Metadata
-        meta_url = f"https://commons.wikimedia.org/w/api.php?action=query&titles=File:{filename}" \
-                   "&prop=imageinfo&iiprop=user|userid|canonicaltitle|url|extmetadata&format=json"
-        meta_response = requests.get(meta_url).json()
+        meta_url = "https://commons.wikimedia.org/w/api.php"
+
+        params = {
+            "action": "query",
+            "titles": f"File:{filename}",
+            "prop": "imageinfo",
+            "iiprop": "user|userid|canonicaltitle|url|extmetadata",
+            "format": "json"
+        }
+
+        meta_response = requests.get(meta_url, params=params, timeout=10).json()
         page_id = next(iter(meta_response['query']['pages']))
         info = meta_response['query']['pages'][page_id]['imageinfo'][0]['extmetadata']
 
