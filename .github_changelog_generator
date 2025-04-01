@@ -1,6 +1,6 @@
 # .github_changelog_generator
-user: your-github-user
-project: your-repo-name
+user: judaicalink
+project: pubby-django
 future-release: unreleased
 exclude-labels: duplicate, question, invalid, wontfix
 enhancement-label: enhancement
