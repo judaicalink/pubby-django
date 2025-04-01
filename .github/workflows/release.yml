@@ -52,7 +52,7 @@ jobs:
       - name: Run Safety Check
         run: |
           pip install safety
-          safety check --full-report
+          safety scan --full-report
 
       #- name: Install bump2version
       #  run: pip install bump2version
