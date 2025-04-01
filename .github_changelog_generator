@@ -1,8 +1,7 @@
-# .github_changelog_generator
-user: judaicalink
-project: pubby-django
-future-release: unreleased
-exclude-labels: duplicate, question, invalid, wontfix
-enhancement-label: enhancement
-bug-label: bug
-issue-line-labels: true
+user=judaicalink
+project=pubby-django
+future-release=unreleased
+exclude-labels=duplicate,question,invalid,wontfix
+enhancement-label=enhancement
+bug-label=bug
+issue-line-labels=true
