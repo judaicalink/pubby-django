@@ -474,7 +474,7 @@ def fetch_image_from_wikidata(wikidata_id):
 
         filename = data["claims"]["P18"][0]["mainsnak"]["datavalue"]["value"]
         filename = filename.replace(" ", "_")
-        md5sum = hashlib.md5(filename.encode('utf-8')).hexdigest()
+        md5sum = hashlib.md5(filename.encode('utf-8'), usedforsecurity=False).hexdigest()
         image_url = f"https://upload.wikimedia.org/wikipedia/commons/{md5sum[0]}/{md5sum[0]}{md5sum[1]}/{filename}"
 
         # Metadata
