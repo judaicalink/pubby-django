@@ -494,7 +494,7 @@ def fetch_image_from_wikidata(wikidata_id):
             "format": "json",
             "search": wikidata_id
         }
-        desc_response = requests.get("https://www.wikidata.org/w/api.php", params=desc_params).json()
+        desc_response = requests.get("https://www.wikidata.org/w/api.php", params=desc_params, timeout=10).json()
         image_description = desc_response["search"][0]["description"]
 
         return {
