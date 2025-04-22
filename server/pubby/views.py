@@ -139,7 +139,7 @@ def rewrite_URL(URL, dataset_base, web_base):
 
 
 def get(request, URI):
-    logging.debug("____________")
+    logger.debug("____________")
     resource = Resource(request, URI)
 
     # Content negotiation
@@ -420,8 +420,11 @@ def index(request):
 
 
 
-def img_data(primary_resource):
-    # 1. gets the wikidata url for an image from the "Owl Same As" Property with the Value of the wikidata link
+
+def fetch_gnd_id(primary_resource):
+    """Extracts GND ID from RDF triples."""
+    if not isinstance(primary_resource, list):
+        return None
 
     for predicate in primary_resource:
         if not isinstance(predicate, dict) or "labels" not in predicate:
@@ -481,9 +484,17 @@ def fetch_image_from_wikidata(wikidata_id):
         image_url = f"https://upload.wikimedia.org/wikipedia/commons/{md5sum[0]}/{md5sum[0]}{md5sum[1]}/{filename}"
 
         # Metadata
-        meta_url = f"https://commons.wikimedia.org/w/api.php?action=query&titles=File:{filename}" \
-                   "&prop=imageinfo&iiprop=user|userid|canonicaltitle|url|extmetadata&format=json"
-        meta_response = requests.get(meta_url).json()
+        meta_url = "https://commons.wikimedia.org/w/api.php"
+
+        params = {
+            "action": "query",
+            "titles": f"File:{filename}",
+            "prop": "imageinfo",
+            "iiprop": "user|userid|canonicaltitle|url|extmetadata",
+            "format": "json"
+        }
+
+        meta_response = requests.get(meta_url, params=params, timeout=10).json()
         page_id = next(iter(meta_response['query']['pages']))
         info = meta_response['query']['pages'][page_id]['imageinfo'][0]['extmetadata']
 
@@ -497,7 +508,7 @@ def fetch_image_from_wikidata(wikidata_id):
             "format": "json",
             "search": wikidata_id
         }
-        desc_response = requests.get("https://www.wikidata.org/w/api.php", params=desc_params).json()
+        desc_response = requests.get("https://www.wikidata.org/w/api.php", params=desc_params, timeout=10).json()
         image_description = desc_response["search"][0]["description"]
 
         return {
@@ -511,31 +522,31 @@ def fetch_image_from_wikidata(wikidata_id):
         return None
 
 
-# to create a FID link from the gnd-ID
-def get_fid_link(primary_resource, gnd_id):
-
-
+def fetch_image_from_fid(fid_link):
+    """Tries to fetch image from FID page (static HTML parsing)."""
+    print("Fetching image from FID...", fid_link)
     try:
         response = requests.get(fid_link, timeout=10)
         if response.status_code == 200:
-            print("Response OK")
+            logger.debug("Response OK")
             soup = BeautifulSoup(response.content, "html.parser")
             img_tag = soup.find("div", {"class": "agent-column-media"}).find("img")
-            print("Image Tag: ", img_tag)
+            logger.debug("Image Tag: ", img_tag)
             if img_tag and "src" in img_tag.attrs:
                 return {
                     "img_url": img_tag["src"],
                     # get base url in img_tag["src"] wihth regex
                     "img_author": re.search(r"^(https?://[^/]+)", img_tag["src"]).group(1) + " fetched from FID Portal",
                     "img_license": "Unknown",
-                    "img_description": img_tag["alt"]
+                    "img_description": None
                 }
         else:
-            print("Response not OK")
-            print("Status code:", response.status_code)
+            logger.debug("Response not OK")
+            logger.debug("Status code:", response.status_code)
 
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Exception occurred while fetching image from FID")
+        logger.debug("Error:", str(e))
     return None
 
 

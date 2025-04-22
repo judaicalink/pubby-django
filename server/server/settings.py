@@ -21,12 +21,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wzc-#ww=hs59p81@m13ur8r0i#4sak!0u_wy6@5no$-y98rt+d'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+#if SECRET_KEY is not defined:
+try:
+    from .localsettings import SECRET_KEY
+except ImportError:
+    print("SECRET_KEY not set, set it in localsettings.py")
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+try:
+    from .localsettings import DEBUG
+except ImportError:
+    DEBUG = False
+
+try:
+    from .localsettings import ALLOWED_HOSTS
+except ImportError:
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -40,6 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'pubby.apps.PubbyConfig',
     'sparql.apps.SparqlConfig',
+    'jquery',
+    'bootstrap5',
+    'fontawesomefree',
     'pubbyauth',
     'social_django',
     'issuetracker',
@@ -58,17 +71,27 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.github.GithubOAuth2',
-    'social_core.backends.orcid.ORCIDOAuth2',
+    'social_core.backends.orcid.OrcidOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 SOCIAL_AUTH_GITHUB_KEY = '6ea53ca13a9295b7ef63'
 SOCIAL_AUTH_GITHUB_SECRET = 'ced9c643f87f77e7f3709703b5063a062c6e43f4'
+SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
 
 SOCIAL_AUTH_ORCID_KEY = 'APP-D200THCB9LWV6LOH'
 SOCIAL_AUTH_ORCID_SECRET = '4af998a2-843b-49ab-9192-06ee85abe312'
 SOCIAL_AUTH_ORCID_SCOPE = ['openid','email','profile','work','funding','affiliations']
+
+
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.orcid.ORCIDOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 ROOT_URLCONF = 'server.urls'
 
@@ -140,6 +163,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'src/'),
+]
 
 
 MEDIA_URL = 'media/'
@@ -158,11 +184,6 @@ PUBBY_CONFIG = {
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-if os.path.isfile("server/localsettings.py"):
-    from .localsettings import *
-
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 #GND_FILE = "/data/judaicalink/data.judaicalink.org/htdocs/dumps/ep/ep_GND_ids.json.gz"
@@ -203,3 +224,4 @@ LOGGING = {
         },
     },
 }
+

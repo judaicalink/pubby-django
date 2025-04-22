@@ -129,10 +129,8 @@ def getconfig(request):
     The namespace is determined based on the request path.
     """
     logger.debug("request.path:", request.path)
-    print("request.path:", request.path)
     namespace = resolve(request.path).namespace
     logger.debug("namespace:", namespace)
-    print("namespace:", namespace)
     return configs[namespace]
 
 

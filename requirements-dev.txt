@@ -1,0 +1,4 @@
+bandit
+safety
+pip-audit
+bump2version
