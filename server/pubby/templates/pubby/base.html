@@ -10,7 +10,7 @@
         <meta name="keywords" content="{{ resource_label }}">
     {% endif %}
     {% if image_data %}
-        <meta name="description" content="{{image_data.img_description }}">
+        <meta name="description" content="{{ image_data.img_description }}">
     {% endif %}
     <title>JudaicaLink Data</title>
 
@@ -53,11 +53,14 @@
 
 </head>
 
+<body>
+
 <div class="wrapper">
     {% include "pubby/partials/navbar.html" %}
     <div id="content">
         <div class="container-fluid">
             {% block content %}
+
             {% endblock content %}
         </div>
     </div>
@@ -66,6 +69,22 @@
 <img referrerpolicy="no-referrer-when-downgrade" src="https://web.judaicalink.org/matomo/matomo.php?idsite=1&amp;rec=1"
      style="border:0" alt=""/>
 <!-- End Matomo -->
+
+<script>
+  const scrollBtn = document.getElementById("scrollToTopBtn");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      scrollBtn.style.display = "block";
+    } else {
+      scrollBtn.style.display = "none";
+    }
+  });
+
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
 
 
 <script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>

@@ -115,24 +115,31 @@
                 {% else %}
                     <img src="{% static '/img/markus-winkler-aYPtEknQmXE-unsplash.jpg' %}" class="img-thumbnail img-fluid" alt="Dataset Picture"  loading="lazy">
                 {% endif %}
-
+        <!-- Begin issue form -->
         {% if user.is_authenticated %}
-    <div class="col-4 bg-light" >
-        {% include "issuetracker/issue_form.html" %}
-    </div>
-
-{% endif %}
+                {% include 'issuetracker/issue_form.html' %}
+        {% endif %}
+        <!-- End issue form -->
 
         </div>
 
     </main>
 
-
-    <!--footer-->
-
+    <!-- Begin issue tracker -->
     {% if user.is_authenticated %}
         {% include 'issuetracker/fab.html' %}
-    {% endif %}
+    {% else %}
+        <a  class="btn btn-secondary" href="{% url 'social:begin' 'orcid' %}?next={{ request.path }}">Login with <i class="fab fa-orcid"></i> ORCID</a>
+    {%  endif %}
+    <!-- End issue tracker -->
+
+    <!-- Begin to top button -->
+    <button id="scrollToTopBtn" class="btn btn-secondary text-white shadow position-fixed" style="bottom: 40px; right: 30px; display: none; z-index: 1030;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <!-- End to top button -->
+
+    <!--footer-->
 
     {% include "pubby/partials/footer.html" %}
 

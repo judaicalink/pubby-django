@@ -39,6 +39,21 @@ except ImportError:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
+try:
+    from .localsettings import SOCIAL_AUTH_ORCID_KEY
+    from .localsettings import SOCIAL_AUTH_ORCID_SECRET
+    from .localsettings import SOCIAL_AUTH_ORCID_REDIRECT_URI
+    from .localsettings import SOCIAL_AUTH_GITHUB_KEY
+    from .localsettings import SOCIAL_AUTH_GITHUB_SECRET
+    from .localsettings import GITHUB_TOKEN
+    from .localsettings import GITHUB_REPO
+    from .localsettings import GND_FILE
+    from .localsettings import DATASETS_DIR
+    from .localsettings import DJANGO_LOG_FILE
+    from .localsettings import DJANGO_LOG_LEVEL
+except ImportError:
+    print("localsettings.py not found, using default settings")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -69,21 +84,11 @@ MIDDLEWARE = [
     #'django.contrib.sitemaps',
 ]
 
-AUTHENTICATION_BACKENDS = [
-    'social_core.backends.github.GithubOAuth2',
-    'social_core.backends.orcid.OrcidOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
-]
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-SOCIAL_AUTH_GITHUB_KEY = '6ea53ca13a9295b7ef63'
-SOCIAL_AUTH_GITHUB_SECRET = 'ced9c643f87f77e7f3709703b5063a062c6e43f4'
 SOCIAL_AUTH_GITHUB_SCOPE = ['user:email']
-
-SOCIAL_AUTH_ORCID_KEY = 'APP-D200THCB9LWV6LOH'
-SOCIAL_AUTH_ORCID_SECRET = '4af998a2-843b-49ab-9192-06ee85abe312'
 SOCIAL_AUTH_ORCID_SCOPE = ['openid','email','profile','work','funding','affiliations']
 
 

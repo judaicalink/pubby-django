@@ -627,7 +627,7 @@ def create_issue(request):
         try:
             user_social_auth = request.user.social_auth.get(provider='github')
             github_username = user_social_auth.extra_data['login']
-            #github_token = user_social_auth.extra_data['access_token']
+            github_token = user_social_auth.extra_data['access_token']
         except:
             # get the django user
             user = request.user
@@ -635,18 +635,24 @@ def create_issue(request):
                 github_username = 'bsesic'
             else:
                 github_username = user.username
-        #print(user.username)
-        #print(github_username)
-        #print(github_token)
+            print(user.username)
+            print(github_username)
+            #print(github_token)
 
         # create issue in github
         g = Github(settings.GITHUB_TOKEN)
 
+        operator = "add" # Add, delete, modify
+
         repo = g.get_repo(settings.GITHUB_REPO)
-        body = f"<description>{description}</description>\n" \
-               f"<user>@{github_username}</user>\n"\
-               f"<property>{triple_property}</property>\n" \
-               f"<ressource-uri>{uri}</ressource-uri>"
+        body = f"Description: <description>{description}</description>\n" \
+               f"User: <user>@{github_username}</user>\n" \
+               f"Subject: " \
+               f"Property: <property>{triple_property}</property>\n" \
+               f"Object: <object>{uri}</object>\n" \
+               f"UUID: <uuid>{uuid}</uuid>\n" \
+               f"Operator: <operator>{operator}</operator>\n" \
+               f"Resource URI:<ressource-uri>{uri}</ressource-uri>"
         repo.create_issue(title="Issue: " + uuid, body=body, assignees=["bsesic"], labels=["rdf-star"])
 
         return redirect(uri)
