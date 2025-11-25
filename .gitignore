@@ -162,3 +162,6 @@ runserver.sh
 
 # ttl ffiles
 server/pubby/config-local.ttl
+*.ttl
+update.sh
+server/nohup.out
