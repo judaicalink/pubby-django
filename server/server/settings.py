@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-import os
 import mimetypes
+import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +24,7 @@ if os.path.isfile("server/localsettings.py"):
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-#if SECRET_KEY is not defined:
+# if SECRET_KEY is not defined:
 try:
     from .localsettings import SECRET_KEY
 except ImportError:
@@ -39,7 +39,6 @@ try:
     from .localsettings import ALLOWED_HOSTS
 except ImportError:
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
-
 
 # Application definition
 
@@ -65,7 +64,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #'django.contrib.sitemaps',
+    # 'django.contrib.sitemaps',
 ]
 
 ROOT_URLCONF = 'server.urls'
@@ -88,7 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'server.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -98,7 +96,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -118,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -132,7 +128,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
@@ -141,7 +136,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'src/'),
 ]
-
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
@@ -152,16 +146,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # PUBBY_CONFIG = "pubby/config.ttl"
 PUBBY_CONFIG = {
-       "pubby": "pubby/config.ttl",
-       "pubby2": "pubby/config-local.ttl",
-        }
+    "pubby": "pubby/config.ttl",
+    "pubby2": "pubby/config-local.ttl",
+    "data": "pubby/config-judaicalink.ttl",
+    "datasets": "pubby/config-judaiclink-datasets.ttl",
+    "ontology": "pubby/config-judaicalink-ontology.ttl",
+}
 
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
-
-
-#GND_FILE = "/data/judaicalink/data.judaicalink.org/htdocs/dumps/ep/ep_GND_ids.json.gz"
+# GND_FILE = "/data/judaicalink/data.judaicalink.org/htdocs/dumps/ep/ep_GND_ids.json.gz"
 
 # disable strict mime checking
 mimetypes.add_type("text/css", ".css", True)
@@ -199,4 +194,3 @@ LOGGING = {
         },
     },
 }
-
