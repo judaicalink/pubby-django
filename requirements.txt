@@ -34,4 +34,4 @@ SPARQLWrapper==2.0.0
 sqlparse==0.5.3
 terminaltables==3.1.10
 typing_extensions==4.13.0
-urllib3==2.3.0
+urllib3==2.5.0
