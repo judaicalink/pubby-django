@@ -1,0 +1,201 @@
+{% extends 'pubby/base.html' %}
+{% block content %}
+    {% load static %}
+
+
+    <!--content-->
+    {% include "pubby/partials/header.html" %}
+    <main class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-9 col-xl-8">
+            <div class="row">
+                <h1>SPARQLer - General purpose processor</h1>
+            </div>
+
+            <div class="row">
+
+                <form action="https://data.judaicalink.org/sparql/query" method="get" name="form" id="form">
+                    <div class="row">
+                        <p class="lead">General SPARQL query : input query, set any options and press "Get Results"</p>
+                        <p class="lead">You can find the Ontology here: <a
+                                href="https://ontology.judaicalink.org/judaicalink-ontology" target="_blank">https://ontology.judaicalink.org/judaicalink-ontology</a>.
+                        </p>
+                    </div>
+                    <div class="row">
+	<textarea name="query" id="query" cols="70" rows="20" class="shadow-sm">
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX gndo: <http://d-nb.info/standards/elementset/gnd#>
+PREFIX jl: <http://data.judaicalink.org/ontology/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+
+SELECT *
+WHERE {
+    { ?s ?p ?o }
+    UNION
+    { GRAPH ?g { ?s ?p ?o } }
+}
+LIMIT 10</textarea>
+
+                    </div>
+                    <div class="row mt-3 col-xl-12">
+                        <div class="input-group">
+                  <span class="input-group-text">Query
+                  Target graph URI (or use <code>FROM</code> in the query)</span>
+                            <select class="form-control" name="default-graph-uri" id="default-graph-uri"
+                                    onchange="updateQuery()">
+                                <option value="ALL" selected>All</option>
+                                {% for title, uri in graphs.items %}
+                                    {% if uri %}
+                                        <option value="{{ uri }}">{{ title }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row col-xl-12">
+                        <div class="input-group">
+                            <span class="input-group-text"> Output</span>
+                            <select class="form-control" name="output" id="output">
+                                <option value="json">JSON</option>
+                                <option value="xml" selected>XML</option>
+                                <option value="text">Text</option>
+                                <option value="csv">CSV</option>
+                                <option value="tsv">TSV</option>
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="row col-xl-12">
+                        <div class="input-group">
+                            <span class="input-group-text">If XML output, XSLT style sheet (blank for none)</span>
+
+                            <select name="stylesheet" class="form-control" id="stylesheet">
+                                <option value=""></option>
+                                <option value="/xml-to-html.xsl">xml-to-html</option>
+                                <option value="/xml-to-html-links.xsl">xml-to-html-links</option>
+                                <option value="/xml-to-html-plain.xsl">xml-to-html-plain</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row col-xl-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="force-accept" id="force-accept"
+                                   value="text/plain"/>
+                            <label class="form-check-label">Force the accept header to <code>text/plain</code>
+                                regardless</label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary shadow" type="button" onclick="fetchSPARQL()"/>
+                    Get Results</button>
+                </form>
+            </div>
+            <div class="col-12">
+                <div class="row">
+                    <h1>Results</h1>
+                </div>
+                <div class="row">
+                    <textarea name="results" cols="70" rows="20" id="results"></textarea>
+                </div>
+            </div>
+
+        </div>
+
+
+    </main>
+
+
+    <!--footer-->
+
+    {% include "pubby/partials/footer.html" %}
+
+    <!--footer-->
+
+{% endblock content %}
+
+{% block scripts %}
+    <script>
+
+    function fetchSPARQL() {
+    let userQuery = $('#query').val().trim();
+    const output = $('#output').val();
+    const stylesheet = encodeURIComponent($('#stylesheet').val());
+    const forceAccept = $('#force-accept').is(':checked') ? 'text/plain' : '';
+
+    if (!userQuery) {
+        alert("Please enter a SPARQL query.");
+        return;
+    }
+
+    let url = "https://data.judaicalink.org/sparql/query/?";
+    url += 'query=' + encodeURIComponent(userQuery) + '&output=' + output + '&stylesheet=' + stylesheet;
+
+    if (forceAccept) {
+        url += '&force-accept=' + forceAccept;
+    }
+
+    fetch(url)
+        .then(response => response.text())
+        .then(data => {
+            const resultsBox = document.getElementById('results');
+            resultsBox.innerHTML = data;
+            resultsBox.style.whiteSpace = 'pre-wrap';
+            resultsBox.style.overflow = 'auto';
+            resultsBox.style.resize = 'both';
+            resultsBox.style.height = resultsBox.scrollHeight + 10 + 'px';
+            resultsBox.style.width = resultsBox.scrollWidth + 10 + 'px';
+        })
+        .catch(error => {
+            console.error('Error fetching SPARQL results:', error);
+        });
+}
+
+
+function updateQuery() {
+    const graphURI = $('#default-graph-uri').val();
+    let currentQuery = $('#query').val();
+
+    // Replace GRAPH <...> or GRAPH ?g
+    const graphPattern = /GRAPH\s+<[^>]+>|GRAPH\s+\?g/;
+    const whereBlockPattern = /WHERE\s*{([\s\S]*?)}/;
+
+    if (graphURI === "ALL") {
+        // Replace graph-specific clause with UNION
+        const unionQuery = `
+SELECT *
+WHERE {
+    { ?s ?p ?o }
+    UNION
+    { GRAPH ?g { ?s ?p ?o } }
+}
+LIMIT 10`;
+
+        // Replace entire WHERE block if it contains GRAPH or simple triple
+        currentQuery = currentQuery.replace(whereBlockPattern, `{
+    { ?s ?p ?o }
+    UNION
+    { GRAPH ?g { ?s ?p ?o } }
+}`);
+    } else {
+        // Insert or replace GRAPH URI
+        if (graphPattern.test(currentQuery)) {
+            currentQuery = currentQuery.replace(graphPattern, `GRAPH <${graphURI}>`);
+        } else {
+            currentQuery = currentQuery.replace(whereBlockPattern, `{
+    GRAPH <${graphURI}> {
+        ?s ?p ?o
+    }
+}`);
+        }
+    }
+
+    $('#query').val(currentQuery.trim());
+}
+
+    </script>
+
+{% endblock %}

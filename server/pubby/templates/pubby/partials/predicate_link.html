@@ -1,0 +1,15 @@
+<a href="{{predicate.link}}">
+    {% for item in predicate.labels %}
+        {% if item.label %}
+            <span lang="{{item.label.language}}">
+     {{item.label}}
+    </span>
+        {% else %}
+            {{item.heuristic}}
+        {% endif %}
+
+    {% endfor %}
+</a>
+{% if predicate.num_objects > 7 %}
+    <span class=count>{{predicate.num_objects}}</span>
+{% endif %}
