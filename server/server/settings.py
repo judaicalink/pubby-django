@@ -149,7 +149,7 @@ PUBBY_CONFIG = {
     "pubby": "pubby/config.ttl",
     "pubby2": "pubby/config-local.ttl",
     "data": "pubby/config-judaicalink.ttl",
-    "datasets": "pubby/config-judaiclink-datasets.ttl",
+    "datasets": "pubby/config-judaicalink-datasets.ttl",
     "ontology": "pubby/config-judaicalink-ontology.ttl",
 }
 
