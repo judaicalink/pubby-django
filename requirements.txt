@@ -16,6 +16,6 @@ regex==2025.11.3
 requests==2.32.5
 soupsieve==2.8
 SPARQLWrapper==2.0.0
-sqlparse==0.5.3
+sqlparse==0.5.4
 typing_extensions==4.15.0
 urllib3==2.6.0
